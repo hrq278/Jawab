@@ -1,19 +1,14 @@
 # ============================================================
 # ai_engine.py — Talks to Gemini AI.
-# Owned by Member 1.
-# Takes a customer message, returns an AI reply.
-# Supports Urdu and English automatically.
-# Uses the google.genai package (NOT the old generativeai).
+# Uses google.genai with gemini-2.5-flash.
 # ============================================================
 
 from google import genai
 from google.genai import types
 from config import GEMINI_API_KEY, BOT_NAME, MAX_CONVERSATION_HISTORY
 
-# Connect to Gemini using our API key
 client = genai.Client(api_key=GEMINI_API_KEY)
 
-# This is the "personality" we give the AI.
 SYSTEM_PROMPT = """
 You are a friendly and professional customer support assistant for a Pakistani small business.
 Your name is {bot_name}.
@@ -38,24 +33,11 @@ orders, delivery, payments, refunds, product questions, and complaints.
 
 
 def get_ai_reply(customer_message: str, conversation_history: list = None) -> str:
-    """
-    Send a customer message to Gemini and get a reply.
-
-    Args:
-        customer_message: What the customer just typed/sent
-        conversation_history: List of previous messages for this customer
-                              Format: [{"role": "user/model", "parts": ["text"]}]
-
-    Returns:
-        The AI's reply as a string
-    """
     if conversation_history is None:
         conversation_history = []
 
-    # Keep only last N messages to avoid hitting token limits
     recent_history = conversation_history[-MAX_CONVERSATION_HISTORY:]
 
-    # Build conversation history in the new SDK format
     contents = []
     for msg in recent_history:
         role = msg.get("role", "user")
@@ -65,12 +47,11 @@ def get_ai_reply(customer_message: str, conversation_history: list = None) -> st
         else:
             contents.append(types.Content(role="user", parts=[types.Part(text=text)]))
 
-    # Add the new customer message
     contents.append(types.Content(role="user", parts=[types.Part(text=customer_message)]))
 
     try:
         response = client.models.generate_content(
-            model="gemini-1.5-flash",
+            model="gemini-2.5-flash",
             contents=contents,
             config=types.GenerateContentConfig(
                 system_instruction=SYSTEM_PROMPT,
@@ -82,6 +63,5 @@ def get_ai_reply(customer_message: str, conversation_history: list = None) -> st
 
     except Exception as e:
         print(f"[AI Engine Error] {e}")
-        # Fallback reply if Gemini fails
         return ("Sorry, I'm having a technical issue right now. "
                 "Please try again in a moment, or reply 'human' to speak to an agent.")
