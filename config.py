@@ -35,4 +35,4 @@ ESCALATION_KEYWORDS = [
     # Urdu (romanised)
     "insaan", "manager chahiye", "baat karni hai", "banda chahiye",
 ]
-MAX_CONVERSATION_HISTORY = 5  # Remember last 5 messages per customer
+MAX_CONVERSATION_HISTORY = 5  # Remember last 5 messages per customerSHEET_ID = os.getenv("SHEET_ID")
